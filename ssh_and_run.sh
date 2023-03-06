@@ -29,7 +29,7 @@ ssh -T -i ~/.ssh/LambdaCloudSSH.pem ubuntu@$IP << EOL
 
   echo "Setting up environment"
   aws configure import --csv "$AWS_CRED"
-  pip install boto3[crt] optuna pytorch-lightning
+  pip install --update boto3[crt] optuna pytorch-lightning numexpr torchvision
 
   mkdir -p data/out
   mkdir data/in
