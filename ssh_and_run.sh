@@ -17,7 +17,7 @@ if [ -z "$IP" ] ; then
   exit 1
 fi
 
-cd "${iCloud}"Papers/WW/NormStudy
+cd "${iCloud}"/Papers/WW/NormStudy
 AWS_CRED=`cat aws_cred.csv`
 GITHUB_TOKEN=`cat ghtoken.txt`
 
