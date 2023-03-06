@@ -24,7 +24,7 @@ GITHUB_TOKEN=`cat ghtoken.txt`
 ssh -T -i ~/.ssh/LambdaCloudSSH.pem ubuntu@$IP << EOL
 
   echo "Downloading git repo"
-  git clone -b test https://$GITHUB_TOKEN@github.com/ChadGueli/RegStudy.git
+  git clone -b test https://$GITHUB_TOKEN@github.com/ChadGueli/NormStudy.git
   cd NormStudy/code
 
   echo "Setting up environment"
