@@ -59,6 +59,7 @@ class Objective(object):
         
         # set up trainer
         trialpath = os.path.join(self.outpath, f"trial{self.trialnum:02}")
+        self.trialnum += 1
         os.mkdir(trialpath)
 
         logger = pl.loggers.CSVLogger(trialpath, name="train_stats")
