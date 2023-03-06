@@ -41,14 +41,20 @@ class Objective(object):
 
         train_loader = DataLoader(
             mnist_train,
+            num_workers=4,
             drop_last=True,
             batch_size=b,
+            persistent_workers=True,
+            pin_memory=True,
             shuffle=True)
         
         val_loader = DataLoader(
             mnist_val,
+            num_workers=2,
             drop_last=True,
-            batch_size=b)
+            persistent_workers=True,
+            pin_memory=True,
+            batch_size=len(mnist_val))
         
         # set up trainer
         trialpath = os.path.join(self.outpath, f"trial{self.trialnum:02}")
@@ -79,7 +85,7 @@ class Objective(object):
         trainer.fit(model, train_loader, val_loader)
         return 0.5 # throw away value because we are not optimizing
 
-if __name__ == "main":
+if __name__ == "__main__":
     outpath = os.path.join("data", "out")
     inpath = os.path.join("data", "in")
     parser = argparse.ArgumentParser()
