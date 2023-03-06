@@ -13,7 +13,7 @@ class LinearLayer(nn.Module):
 
         self.layer = nn.Sequential(
             nn.BatchNorm1d(in_features),
-            nn.Linear(in_features, out_features),
+            nn.Linear(in_features, out_features, bias=False),
             nn.ReLU(),
             nn.Dropout(p=drop_rate))
          
@@ -51,8 +51,6 @@ class TestNet(pl.LightningModule):
         self.acc_num, self.acc_den = torch.tensor(0), torch.tensor(0)
 
         self.model = nn.Sequential(nn.Flatten())
-        self.model.append(nn.Linear(28*28, 128))
-        self.model.append(nn.ReLU())
         layer_params = [(28*28, 60), (60, 60)]
         for i, o in layer_params:
             self.model.append(LinearLayer(i, o, drop_rate))
