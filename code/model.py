@@ -51,16 +51,18 @@ class TestNet(pl.LightningModule):
         self.acc_num, self.acc_den = torch.tensor(0), torch.tensor(0)
 
         self.model = nn.Sequential(nn.Flatten())
-        layer_params = [(28*28, 60)] + [(60, 60)]*2
-        for i, o in layer_params:
-            self.model.append(LinearLayer(i, o, drop_rate))
+        self.model.append(nn.Linear(28*28, 128))
+        self.model.append(nn.ReLU())
+        #layer_params = [(28*28, 60)] + [(60, 60)]*2
+        #for i, o in layer_params:
+        #    self.model.append(LinearLayer(i, o, drop_rate))
 
         if continuous:
-            self.model.append(nn.Linear(60, 1))
+            self.model.append(nn.Linear(128, 1))
             self.loss = nn.MSELoss()
         else:
             self.model.append(nn.Sequential(
-                nn.Linear(60, 10),
+                nn.Linear(128, 10),
                 nn.LogSoftmax(1)))
             self.loss = nn.NLLLoss()
 
@@ -81,7 +83,7 @@ class TestNet(pl.LightningModule):
             pred = pred.argmax(dim=1)
 
         self.acc_num = self.acc_num + pred.eq(y).float().sum().detach().item()
-        self.acc_den = self.acc_den + self.bs
+        self.acc_den = self.acc_den + self.vbs
         self.log("acc", self.acc_num/self.acc_den, on_epoch=True, prog_bar=True)
 
     def validation_epoch_end(self, val_step_outputs):

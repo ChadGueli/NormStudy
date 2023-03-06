@@ -4,8 +4,9 @@ import numpy as np
 import optuna
 import os
 import pytorch_lightning as pl
-import pandas as pd
 
+import pandas as pd
+import torch
 import torchvision.transforms
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
@@ -86,6 +87,8 @@ class Objective(object):
         return 0.5 # throw away value because we are not optimizing
 
 if __name__ == "__main__":
+    torch.set_float32_matmul_precision('high')
+
     outpath = os.path.join("data", "out")
     inpath = os.path.join("data", "in")
     parser = argparse.ArgumentParser()
