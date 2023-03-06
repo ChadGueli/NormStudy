@@ -17,7 +17,7 @@ if [ -z "$IP" ] ; then
   exit 1
 fi
 
-cd "${iCloud}"Papers/WW/RegStudy/exp_code
+cd "${iCloud}"Papers/WW/NormStudy
 AWS_CRED=`cat aws_cred.csv`
 GITHUB_TOKEN=`cat ghtoken.txt`
 
@@ -29,6 +29,7 @@ ssh -T -i ~/.ssh/LambdaCloudSSH.pem ubuntu@$IP << EOL
 
   echo "Setting up environment"
   aws configure import --csv "$AWS_CRED"
+  # it is faster to update everytime than to pull the massive docker container
   pip install --update boto3[crt] optuna pytorch-lightning numexpr torchvision
 
   mkdir -p data/out
