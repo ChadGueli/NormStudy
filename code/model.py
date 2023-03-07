@@ -55,12 +55,13 @@ class TestNet(pl.LightningModule):
         for i, o in layer_params:
             self.model.append(LinearLayer(i, o, drop_rate))
 
+        self.model.append(nn.BatchNorm1d(60))
         if continuous:
-            self.model.append(nn.Linear(60, 1))
+            self.model.append(nn.Linear(60, 1, bias=False))
             self.loss = nn.MSELoss()
         else:
             self.model.append(nn.Sequential(
-                nn.Linear(60, 10),
+                nn.Linear(60, 10, bias=False),
                 nn.LogSoftmax(1)))
             self.loss = nn.NLLLoss()
 
