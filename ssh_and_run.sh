@@ -30,7 +30,8 @@ ssh -T -i ~/.ssh/LambdaCloudSSH.pem ubuntu@$IP << EOL
   echo "Setting up environment"
   aws configure import --csv "$AWS_CRED"
   # it is faster to update everytime than to pull the massive docker container
-  pip install --upgrade boto3[crt] optuna pytorch-lightning numexpr torchvision
+  pip install -U --quiet boto3[crt] optuna pytorch-lightning \
+    numexpr torchvision
 
   mkdir -p data/out
   mkdir data/in
