@@ -99,7 +99,7 @@ if __name__ == "__main__":
         'batch_size': [16, 64],
         'drop_rate': [0.1, 0.2],
         'learning_rate': [0.001, 0.01], # = max lr (@ epoch = maxepoch/10)
-        'weight_decay': [0.1, 0.3],
+        'weight_decay': [0.3, 0.6],
         'continuous': [True, False]
     } 
 
