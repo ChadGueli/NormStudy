@@ -97,9 +97,9 @@ if __name__ == "__main__":
 
     search_space = {
         'batch_size': [16, 64],
-        'drop_rate': [0.3, 0.5],
-        'learning_rate': [0.001, 0.01], # max lr (@ maxepoch/10)
-        'weight_decay': [0.5, 0.8],
+        'drop_rate': [0.1, 0.2],
+        'learning_rate': [0.001, 0.01], # = max lr (@ epoch = maxepoch/10)
+        'weight_decay': [0.1, 0.3],
         'continuous': [True, False]
     } 
 
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     
     if not test:
         # Two study objects are necessary b/c gridsampler automatically
-        # stops when possibilities are exhausted.
+        # stops when combos are exhausted.
         study1 = optuna.create_study(
         sampler=optuna.samplers.GridSampler(search_space))
         study1.optimize(objective, n_trials=32)
