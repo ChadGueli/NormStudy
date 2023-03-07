@@ -71,7 +71,7 @@ class Objective(object):
             callbacks.append(device_stats)
 
         trainer = pl.Trainer(
-            accelerator='gpu', devices=1, max_epochs=10,#150,
+            accelerator='gpu', devices=1, max_epochs=150,
             logger=logger, callbacks=callbacks,
             enable_progress_bar=self.test)
         
