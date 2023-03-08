@@ -13,7 +13,7 @@ class LinearLayer(nn.Module):
 
         self.layer = nn.Sequential(
             nn.BatchNorm1d(in_features),
-            nn.Linear(in_features, out_features),
+            nn.Linear(in_features, out_features, bias=False),
             nn.ReLU(),
             nn.Dropout(p=drop_rate))
          
@@ -51,16 +51,17 @@ class TestNet(pl.LightningModule):
         self.acc_num, self.acc_den = torch.tensor(0), torch.tensor(0)
 
         self.model = nn.Sequential(nn.Flatten())
-        layer_params = [(28*28, 60)] + [(60, 60)]*2
+        layer_params = [(28*28, 60), (60, 60)]
         for i, o in layer_params:
             self.model.append(LinearLayer(i, o, drop_rate))
 
+        self.model.append(nn.BatchNorm1d(60))
         if continuous:
-            self.model.append(nn.Linear(60, 1))
+            self.model.append(nn.Linear(60, 1, bias=False))
             self.loss = nn.MSELoss()
         else:
             self.model.append(nn.Sequential(
-                nn.Linear(60, 10),
+                nn.Linear(60, 10, bias=False),
                 nn.LogSoftmax(1)))
             self.loss = nn.NLLLoss()
 
@@ -81,7 +82,7 @@ class TestNet(pl.LightningModule):
             pred = pred.argmax(dim=1)
 
         self.acc_num = self.acc_num + pred.eq(y).float().sum().detach().item()
-        self.acc_den = self.acc_den + self.bs
+        self.acc_den = self.acc_den + self.vbs
         self.log("acc", self.acc_num/self.acc_den, on_epoch=True, prog_bar=True)
 
     def validation_epoch_end(self, val_step_outputs):
