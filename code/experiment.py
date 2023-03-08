@@ -1,11 +1,11 @@
 import argparse
 import boto3
+import csv
 import numpy as np
 import optuna
 import os
 import pytorch_lightning as pl
 
-import pandas as pd
 import torch
 import torchvision.transforms
 from torchvision.datasets import MNIST
@@ -71,7 +71,7 @@ class Objective(object):
             callbacks.append(device_stats)
 
         trainer = pl.Trainer(
-            accelerator='gpu', devices=1, max_epochs=150,
+            accelerator='gpu', devices=1, max_epochs=2 if self.test else 150,
             logger=logger, callbacks=callbacks,
             enable_progress_bar=self.test)
         
@@ -82,18 +82,28 @@ class Objective(object):
             drop_rate=d,
             learning_rate=r,
             weight_decay=w,
+            epochs=10 if test else 150,
             val_batch_size=len(mnist_val))
         
         trainer.fit(model, train_loader, val_loader)
         return 0.5 # throw away value because we are not optimizing
 
 if __name__ == "__main__":
-    torch.set_float32_matmul_precision('high')
-
-    outpath = os.path.join("data", "out")
-    inpath = os.path.join("data", "in")
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--test", action='store_true')
+    parser.add_argument("--aws", type=lambda x: csv.DictReader(x.split("\n")))
+    clargs = parser.parse_args()
+
+    test = clargs.test
+    aws_creds = next(clargs.aws)
+    outpath = os.path.join(os.path.abspath(os.sep), "data", "out")
+    inpath = os.path.join(os.path.abspath(os.sep), "data", "in")
+
+    torch.set_float32_matmul_precision('high')
+
+    session = boto3.session.Session(
+        aws_access_key_id=aws_creds["Access key ID"],
+        aws_secret_access_key=aws_creds["Secret access key"])
 
     search_space = {
         'batch_size': [16, 64],
@@ -102,39 +112,28 @@ if __name__ == "__main__":
         'weight_decay': [0.3, 0.6],
         'continuous': [True, False]
     } 
-
-    test = parser.parse_args().test
-    objective = Objective(inpath, outpath, test)
-    study0 = optuna.create_study(
-        sampler=optuna.samplers.GridSampler(search_space))
-    study0.optimize(objective, n_trials=2 if test else 32)
     
-    if not test:
-        # Two study objects are necessary b/c gridsampler automatically
-        # stops when combos are exhausted.
-        study1 = optuna.create_study(
+    objective = Objective(inpath, outpath, test)
+    study = optuna.create_study(
         sampler=optuna.samplers.GridSampler(search_space))
-        study1.optimize(objective, n_trials=32)
+    study.optimize(objective, n_trials=2 if test else 32)
 
     # transfer files to S3
-    session = boto3.session.Session(profile_name="RegStudyUser")
     bucket = session.resource("s3").Bucket("reg-study-bucket")
-    
-    df = study0.trials_dataframe()
-    if not test:
-        df = pd.concat([df, study0.trials_dataframe()])
 
     csv_path = os.path.join(outpath, "trial_info.csv")
-    df.to_csv(csv_path)
+    study.trials_dataframe().to_csv(csv_path)
     bucket.upload_file(csv_path, "trial_info.csv")
 
-    for t in range(2 if test else 64):
+    for t in range(2 if test else 32):
         tn = f"trial{t:02}"
         tpath = os.path.join(outpath, tn)
         bucket.upload_file(
             os.path.join(tpath, "train_stats", "version_0", "metrics.csv"),
-            tn+"metrics.csv")
+            "metrics/{tn}.csv")
         
         for entry in os.listdir(tpath):
             if entry.split(".")[-1] == "ckpt":
-                bucket.upload_file(os.path.join(tpath, entry), tn+entry)
+                bucket.upload_file(
+                    os.path.join(tpath, entry),
+                    f"{tn}/epoch{entry[6:9]}.ckpt")
