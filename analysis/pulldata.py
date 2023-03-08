@@ -11,9 +11,9 @@ class GetFiles(object):
         self.bucket_name = bucket_name
 
     def __call__(self, localpath):
-        self.ckpt_path = os.path.join(localpath, "ckpts")
-        self.metric_path = os.path.join(localpath, "metrics")
-        for p in [self.ckpt_path, self.metric_path]:
+        ckpt_path = os.path.join(localpath, "ckpts")
+        metric_path = os.path.join(localpath, "metrics")
+        for p in [ckpt_path, metric_path]:
             try:
                 os.mkdir(p)
             except FileExistsError:
